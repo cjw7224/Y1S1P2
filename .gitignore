@@ -1,0 +1,15 @@
+# Default ignored files
+.idea/shelf/
+.idea/workspace.xml
+# Datasource local storage ignored files
+.idea/dataSources/
+.idea/dataSources.local.xml
+# Editor-based HTTP Client requests
+.idea/httpRequests/
+.idea/libraries/lib/xml
+# JavaFX library
+.idea/libraries/lib.xml
+# other things
+out/
+*.class
+output/
