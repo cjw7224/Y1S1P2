@@ -1,8 +1,10 @@
 package ptui;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +25,10 @@ public class RITUncompress {
 		}
 
 		Uncompresser u = new RITUncompress().new Uncompresser(new File(args[0]));
-		RITQTNode root = u.genNodes(1);
-		System.out.println(root.toString());
+		RITQTNode root = u.getTree(1);
 		u.parseNode(root);
+		u.writeFile(args[1]);
 
-		System.out.println();
-		System.out.println(u.getScreen());
 	}
 
 	private class Uncompresser {
@@ -47,6 +47,8 @@ public class RITUncompress {
 		 */
 		private Uncompresser(File in) {
 
+			System.out.println("Uncompressing: " + in.getName());
+
 			try {
 				ints = new ArrayList<>();
 				BufferedReader br = new BufferedReader(new FileReader(in));
@@ -63,6 +65,12 @@ public class RITUncompress {
 						screen[i][j] = -255;
 					}
 				}
+
+				System.out.print("QTree: ");
+				for (int i = 1; i < ints.size(); i++) {
+					System.out.print(ints.get(i) + " ");
+				}
+				System.out.println();
 
 			} catch (NumberFormatException ex) {
 
@@ -83,12 +91,12 @@ public class RITUncompress {
 		 * @param startpoint - the index of ints to start at.
 		 * @return an RITQTNode whose children emulate that in the .rit file.
 		 */
-		private RITQTNode genNodes(int startpoint) {
-
-			int temp = ints.get(startpoint);
+		private RITQTNode getTree(int startpoint) {
+			int temp = ints.remove(startpoint);
 			if (temp == -1) {
-				return new RITQTNode(temp, genNodes(startpoint + 1), genNodes(startpoint + 2), genNodes(startpoint + 3),
-						genNodes(startpoint + 4));
+				return new RITQTNode(temp, getTree(startpoint), getTree(startpoint), getTree(startpoint),
+						getTree(startpoint));
+
 			} else {
 				return new RITQTNode(temp);
 			}
@@ -116,30 +124,54 @@ public class RITUncompress {
 		 */
 		private void parseNode(RITQTNode node, int xoff, int yoff, int depth) {
 
-			int offset = dim / depth;
-
-			System.out.println(node.getVal() + " @ (" + xoff + "," + yoff + ") " + offset + "x" + offset);
+			int cubeSize = dim / depth;
 
 			if (node.isLeaf()) {
-				for (int i = xoff; i < offset; i++) {
-					for (int j = yoff; j < offset; j++) {
+				for (int i = xoff; i < xoff + cubeSize; i++) {
+					for (int j = yoff; j < yoff + cubeSize; j++) {
 						screen[j][i] = node.getVal();
 
 					}
 				}
-				System.out.println(getScreen());
 
 			} else {
-				System.out.println("NOOP\n");
 				depth *= 2;
 
+				int offset = dim / depth;
+
 				parseNode(node.getUpperLeft(), xoff, yoff, depth);
-				parseNode(node.getUpperRight(), offset / 2 + 1, yoff, depth);
-				parseNode(node.getLowerLeft(), xoff, offset / 2 + 1, depth);
-				parseNode(node.getLowerRight(), offset / 2 + 1, offset / 2 + 1, depth);
+				parseNode(node.getUpperRight(), xoff + offset, yoff, depth);
+				parseNode(node.getLowerLeft(), xoff, yoff + offset, depth);
+				parseNode(node.getLowerRight(), xoff + offset, yoff + offset, depth);
+
 			}
 		}
 
+		/*
+		 * [0, 0, 0, 85]
+		 * [0, 0, 170, 255]
+		 * [170, 170, 255, 85]
+		 * [170, 170, 170, 0]
+		 */
+
+		private void writeFile(String path) {
+			File f = new File(path);
+			System.out.println("Output file: " + path);
+			try {
+				BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+				for (int i = 0; i < dim; i++) {
+					for (int j = 0; j < dim; j++) {
+						bw.write(screen[i][j] + "\n");
+					}
+				}
+				bw.close();
+			} catch (IOException ex) {
+				System.err.println("The file " + path + "could not be successfully written to.");
+				System.exit(-3);
+			}
+		}
+
+		@SuppressWarnings("unused")
 		private String getScreen() {
 			String out = "";
 			for (int[] current : screen) {

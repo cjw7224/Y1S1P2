@@ -109,7 +109,8 @@ public class RITQTNode {
 	@Override
 	public String toString() {
 		if (ul != null) {
-			return " ( " + ul.toString() + " " + ur.toString() + " " + ll.toString() + " " + lr.toString() + " ) ";
+			return (" ( " + ul.toString() + " " + ur.toString() + " " + ll.toString() + " " + lr.toString() + " ) ")
+					.replace("  ", " ");
 		} else {
 			return val + "";
 		}

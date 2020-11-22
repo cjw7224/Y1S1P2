@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import exception.InvalidRangeException;
@@ -138,9 +139,11 @@ public class RITViewer extends Application {
 					}
 				}
 
-			} catch (
+				for (int[] current : image) {
+					System.out.println(Arrays.toString(current));
+				}
 
-			Exception ex) {
+			} catch (Exception ex) {
 				ex.printStackTrace();
 				// this shouldn't happen in theory, because we already checked that the file
 				// exists.
