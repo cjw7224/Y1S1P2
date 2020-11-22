@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import exception.InvalidRangeException;
 import exception.InvalidResolutionException;
@@ -105,32 +107,40 @@ public class RITViewer extends Application {
 
 			// parse all the values in the file
 
-			dimension = Integer
-					.parseInt(name.substring(name.replace(".txt", "").lastIndexOf("x") + 1, name.lastIndexOf(".")));
-
-			// https://www.geeksforgeeks.org/java-program-to-find-whether-a-no-is-power-of-two/
-			if ((Math.ceil((Math.log(dimension) / Math.log(2)))) != (int) (Math
-					.floor(((Math.log(dimension) / Math.log(2)))))) {
-				throw new InvalidResolutionException();
-			}
-
-			image = new int[dimension][dimension];
+			List<Integer> ints = new ArrayList<>();
 
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(f));
 
-				for (int i = 0; i < dimension; i++) {
-					for (int j = 0; j < dimension; j++) {
-						image[i][j] = Integer.parseInt(br.readLine());
-						if (image[i][j] > 255 || image[i][j] < 0) {
-							br.close();
-							throw new InvalidRangeException();
-						}
+				while (br.ready()) {
+					int temp = Integer.parseInt(br.readLine());
+					if (temp > 255 || temp < 0) {
+						br.close();
+						throw new InvalidRangeException();
 					}
+					ints.add(temp);
 				}
 				br.close();
 
-			} catch (Exception ex) {
+				dimension = (int) Math.sqrt(ints.size());
+
+				// https://www.geeksforgeeks.org/java-program-to-find-whether-a-no-is-power-of-two/
+				if ((Math.ceil((Math.log(dimension) / Math.log(2)))) != (int) (Math
+						.floor(((Math.log(dimension) / Math.log(2)))))) {
+					throw new InvalidResolutionException();
+				}
+
+				image = new int[dimension][dimension];
+
+				for (int i = 0; i < dimension; i++) {
+					for (int j = 0; j < dimension; j++) {
+						image[i][j] = ints.get(i * dimension + j);
+					}
+				}
+
+			} catch (
+
+			Exception ex) {
 				ex.printStackTrace();
 				// this shouldn't happen in theory, because we already checked that the file
 				// exists.
