@@ -106,6 +106,18 @@ public class RITQTNode {
 		return val != -1;
 	}
 
+	private int getValues(int start) {
+		if (isLeaf()) {
+			return 1;
+		} else {
+			return ul.getValues(start) + ur.getValues(start) + ll.getValues(start) + lr.getValues(start) + start;
+		}
+	}
+
+	public int getValues() {
+		return getValues(0);
+	}
+
 	@Override
 	public String toString() {
 		if (ul != null) {
@@ -113,6 +125,15 @@ public class RITQTNode {
 					.replace("  ", " ");
 		} else {
 			return val + "";
+		}
+	}
+
+	public String toStringPreorder() {
+		if (ul != null) {
+			return (this.getVal() + " " + ul.toStringPreorder() + " " + ur.toStringPreorder() + " "
+					+ ll.toStringPreorder() + " " + lr.toStringPreorder()).replace("  ", " ");
+		} else {
+			return this.getVal() + " ";
 		}
 	}
 }
