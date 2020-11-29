@@ -91,7 +91,7 @@ public class RITViewer extends Application {
 		Application.launch(args);
 	}
 
-	private class UncompressedImageRenderer {
+	public class UncompressedImageRenderer {
 
 		private int dimension;
 		private File f;

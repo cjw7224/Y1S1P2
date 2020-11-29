@@ -114,7 +114,7 @@ public class RITQTNode {
 		}
 	}
 
-	public int getValues() {
+	public int getNumChildren() {
 		return getValues(0);
 	}
 
@@ -133,7 +133,7 @@ public class RITQTNode {
 			return (this.getVal() + " " + ul.toStringPreorder() + " " + ur.toStringPreorder() + " "
 					+ ll.toStringPreorder() + " " + lr.toStringPreorder()).replace("  ", " ");
 		} else {
-			return this.getVal() + " ";
+			return (this.getVal() + " ").replace("  ", " ");
 		}
 	}
 }

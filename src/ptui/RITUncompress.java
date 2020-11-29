@@ -8,8 +8,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import exception.FileWriteException;
 import model.RITQTNode;
 
 public class RITUncompress {
@@ -23,15 +25,47 @@ public class RITUncompress {
 			System.exit(-1);
 			;
 		}
+		try {
+			File in = new File(args[0]);
+			System.out.println("Uncompressing: " + in.getName());
 
-		Uncompresser u = new RITUncompress().new Uncompresser(new File(args[0]));
-		RITQTNode root = u.getTree(1);
-		u.parseNode(root);
-		u.writeFile(args[1]);
+			Uncompresser u = new RITUncompress().new Uncompresser(in);
+
+			List<Integer> ints = u.getInts();
+			System.out.print("QTree: ");
+			for (int i = 1; i < ints.size(); i++) {
+				System.out.print(ints.get(i) + " ");
+			}
+			System.out.println();
+
+			System.out.println("Output file: " + new File(args[1]).getPath());
+
+			RITQTNode root = u.getTree(1);
+			u.parseNode(root);
+			u.writeFile(new File(args[1]));
+
+		} catch (Exception ex) {
+			if (ex instanceof IOException) {
+				// If the input file does not exist or is not readable, display an error message
+				// and exit.
+				System.err.println("The input file does not exist or is not readable.");
+				System.exit(-2);
+
+			} else if (ex instanceof FileWriteException) {
+
+				System.err.println("The file " + args[1] + " could not be successfully written to.");
+				System.exit(-3);
+
+			} else if (ex instanceof NumberFormatException) {
+
+				System.err.println("The input file contains invalid characters.");
+				System.exit(-4);
+			}
+		}
 
 	}
 
-	private class Uncompresser {
+	public class Uncompresser {
 
 		private List<Integer> ints;
 		private int[][] screen;
@@ -45,44 +79,28 @@ public class RITUncompress {
 		 * 
 		 * @param in - The file to parse.
 		 */
-		private Uncompresser(File in) {
+		public Uncompresser(File in) throws Exception {
 
-			System.out.println("Uncompressing: " + in.getName());
+			ints = new ArrayList<>();
+			BufferedReader br = new BufferedReader(new FileReader(in));
 
-			try {
-				ints = new ArrayList<>();
-				BufferedReader br = new BufferedReader(new FileReader(in));
-
-				while (br.ready()) {
-					ints.add(Integer.parseInt(br.readLine()));
-				}
-				br.close();
-				dim = (int) Math.sqrt(ints.get(0));
-
-				screen = new int[dim][dim];
-				for (int i = 0; i < dim; i++) {
-					for (int j = 0; j < dim; j++) {
-						screen[i][j] = -255;
-					}
-				}
-
-				System.out.print("QTree: ");
-				for (int i = 1; i < ints.size(); i++) {
-					System.out.print(ints.get(i) + " ");
-				}
-				System.out.println();
-
-			} catch (NumberFormatException ex) {
-
-				System.err.println("The input file contains invalid characters.");
-				System.exit(-4);
-
-			} catch (IOException ex) {
-				// If the input file does not exist or is not readable, display an error message
-				// and exit.
-				System.err.println("The input file does not exist or is not readable.");
-				System.exit(-2);
+			while (br.ready()) {
+				ints.add(Integer.parseInt(br.readLine()));
 			}
+			br.close();
+			dim = (int) Math.sqrt(ints.get(0));
+
+			screen = new int[dim][dim];
+			for (int i = 0; i < dim; i++) {
+				for (int j = 0; j < dim; j++) {
+					screen[i][j] = -255;
+				}
+			}
+
+		}
+
+		public List<Integer> getInts() {
+			return Collections.unmodifiableList(ints);
 		}
 
 		/**
@@ -91,7 +109,7 @@ public class RITUncompress {
 		 * @param startpoint - the index of ints to start at.
 		 * @return an RITQTNode whose children emulate that in the .rit file.
 		 */
-		private RITQTNode getTree(int startpoint) {
+		public RITQTNode getTree(int startpoint) {
 			int temp = ints.remove(startpoint);
 			if (temp == -1) {
 				return new RITQTNode(temp, getTree(startpoint), getTree(startpoint), getTree(startpoint),
@@ -107,7 +125,7 @@ public class RITUncompress {
 		 * 
 		 * @param node the node to parse.
 		 */
-		private void parseNode(RITQTNode node) {
+		public void parseNode(RITQTNode node) {
 			parseNode(node, 0, 0, 1);
 		}
 
@@ -154,9 +172,8 @@ public class RITUncompress {
 		 * [170, 170, 170, 0]
 		 */
 
-		private void writeFile(String path) {
-			File f = new File(path);
-			System.out.println("Output file: " + path);
+		public void writeFile(File f) throws FileWriteException {
+
 			try {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(f));
 				for (int i = 0; i < dim; i++) {
@@ -166,8 +183,7 @@ public class RITUncompress {
 				}
 				bw.close();
 			} catch (IOException ex) {
-				System.err.println("The file " + path + "could not be successfully written to.");
-				System.exit(-3);
+				throw new FileWriteException();
 			}
 		}
 
